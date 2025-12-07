@@ -2,15 +2,25 @@ import { TrendingUp, Shield, Wallet } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
 import StockList from "@/components/stocks/StockList";
+import BuyStockDialog from "@/components/stocks/BuyStockDialog";
 import { useAuth } from "@/context/AuthContext";
 import { type Stock } from "@/services/api";
+import { useState } from "react";
+import { useStocks } from "@/context/StockContext";
 
 export default function Home() {
   const { isLoggedIn } = useAuth();
+  const { refreshStocks } = useStocks();
+  const [selectedStock, setSelectedStock] = useState<Stock | null>(null);
+  const [dialogOpen, setDialogOpen] = useState(false);
 
   const handleBuy = (stock: Stock) => {
-    console.log("Acheter:", stock.stockName);
-    // TODO: Implémenter la logique d'achat
+    setSelectedStock(stock);
+    setDialogOpen(true);
+  };
+
+  const handleBuySuccess = () => {
+    refreshStocks();
   };
 
   return (
@@ -68,6 +78,9 @@ export default function Home() {
         <h2 className="text-2xl font-bold text-center mb-8">Actions disponibles</h2>
         <StockList isLoggedIn={isLoggedIn} onBuy={handleBuy} />
       </section>
+
+      {/* Buy Stock Dialog */}
+      <BuyStockDialog stock={selectedStock} open={dialogOpen} onOpenChange={setDialogOpen} onSuccess={handleBuySuccess} />
     </div>
   );
 }

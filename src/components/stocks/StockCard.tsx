@@ -9,7 +9,6 @@ interface StockCardProps {
 }
 
 export default function StockCard({ stock, onBuy, isLoggedIn = false }: StockCardProps) {
-  // Protection contre les données undefined
   if (!stock) {
     return null;
   }

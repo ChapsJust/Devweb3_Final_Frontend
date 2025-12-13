@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { TrendingUp, TrendingDown } from "lucide-react";
+import { FormattedMessage, FormattedNumber } from "react-intl";
 
 interface StockCardProps {
   stock: Stock;
@@ -27,15 +28,19 @@ export default function StockCard({ stock, onBuy, isLoggedIn = false }: StockCar
           </div>
           <Badge variant={stock.isAvailable ? "default" : "destructive"} className="gap-1">
             {stock.isAvailable ? <TrendingUp className="h-3 w-3" /> : <TrendingDown className="h-3 w-3" />}
-            {stock.isAvailable ? "Disponible" : "Indisponible"}
+            {stock.isAvailable ? <FormattedMessage id="stock.available" defaultMessage="Disponible" /> : <FormattedMessage id="stock.unavailable" defaultMessage="Indisponible" />}
           </Badge>
         </div>
       </CardHeader>
 
       <CardContent className="space-y-3">
         <div className="flex justify-between items-center">
-          <span className="text-2xl font-bold">${unitPrice.toFixed(2)}</span>
-          <span className="text-sm text-muted-foreground">Quantité: {stock.quantity ?? 0}</span>
+          <span className="text-2xl font-bold">
+            <FormattedNumber value={unitPrice} style="currency" currency="USD" />
+          </span>
+          <span className="text-sm text-muted-foreground">
+            <FormattedMessage id="stock.quantity" defaultMessage="Quantité: {quantity}" values={{ quantity: stock.quantity ?? 0 }} />
+          </span>
         </div>
 
         {stock.tags && stock.tags.length > 0 && (
@@ -52,10 +57,12 @@ export default function StockCard({ stock, onBuy, isLoggedIn = false }: StockCar
       <CardFooter>
         {isLoggedIn ? (
           <Button className="w-full" onClick={() => onBuy?.(stock)} disabled={!stock.isAvailable || stock.quantity === 0}>
-            {stock.isAvailable && stock.quantity > 0 ? "Acheter" : "Indisponible"}
+            {stock.isAvailable && stock.quantity > 0 ? <FormattedMessage id="stock.buy" defaultMessage="Acheter" /> : <FormattedMessage id="stock.unavailable" defaultMessage="Indisponible" />}
           </Button>
         ) : (
-          <p className="w-full text-center text-sm text-muted-foreground">Connectez-vous pour acheter</p>
+          <p className="w-full text-center text-sm text-muted-foreground">
+            <FormattedMessage id="stock.loginToBuy" defaultMessage="Connectez-vous pour acheter" />
+          </p>
         )}
       </CardFooter>
     </Card>

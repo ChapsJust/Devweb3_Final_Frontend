@@ -6,6 +6,8 @@ import { Label } from "@/components/ui/label";
 import { type Stock, userApi } from "@/services/api";
 import { useAuth } from "@/context/AuthContext";
 import { Loader2 } from "lucide-react";
+import { FormattedMessage, FormattedNumber } from "react-intl";
+import { useLocale } from "@/context/LocaleContextType";
 
 interface BuyStockDialogProps {
   stock: Stock | null;
@@ -16,6 +18,7 @@ interface BuyStockDialogProps {
 
 export default function BuyStockDialog({ stock, open, onOpenChange, onSuccess }: BuyStockDialogProps) {
   const { user } = useAuth();
+  const { intl } = useLocale();
   const [quantity, setQuantity] = useState(1);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -27,7 +30,7 @@ export default function BuyStockDialog({ stock, open, onOpenChange, onSuccess }:
 
   const handleBuy = async () => {
     if (quantity < 1 || quantity > maxQuantity) {
-      setError(`Quantité invalide (1-${maxQuantity})`);
+      setError(intl.formatMessage({ id: "buyDialog.invalidQuantity", defaultMessage: "Quantité invalide (1-{max})" }, { max: maxQuantity }));
       return;
     }
 
@@ -37,14 +40,13 @@ export default function BuyStockDialog({ stock, open, onOpenChange, onSuccess }:
 
       const updatedUser = await userApi.buyStock(stock._id, quantity);
 
-      // Mettre à jour le user dans localStorage
       localStorage.setItem("user", JSON.stringify(updatedUser));
 
       onOpenChange(false);
       setQuantity(1);
       onSuccess?.();
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Erreur lors de l'achat");
+      setError(err instanceof Error ? err.message : intl.formatMessage({ id: "buyDialog.error", defaultMessage: "Erreur lors de l'achat" }));
     } finally {
       setLoading(false);
     }
@@ -54,43 +56,59 @@ export default function BuyStockDialog({ stock, open, onOpenChange, onSuccess }:
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Acheter {stock.stockName}</DialogTitle>
-          <DialogDescription>Symbole: {stock.stockShortName}</DialogDescription>
+          <DialogTitle>
+            <FormattedMessage id="buyDialog.title" defaultMessage="Acheter {name}" values={{ name: stock.stockName }} />
+          </DialogTitle>
+          <DialogDescription>
+            <FormattedMessage id="buyDialog.symbol" defaultMessage="Symbole: {symbol}" values={{ symbol: stock.stockShortName }} />
+          </DialogDescription>
         </DialogHeader>
 
         <div className="space-y-4 py-4">
           <div className="space-y-2">
-            <Label htmlFor="quantity">Quantité</Label>
+            <Label htmlFor="quantity">
+              <FormattedMessage id="buyDialog.quantity" defaultMessage="Quantité" />
+            </Label>
             <Input id="quantity" type="number" min={1} max={maxQuantity} value={quantity} onChange={(e) => setQuantity(parseInt(e.target.value) || 1)} disabled={loading} />
-            <p className="text-xs text-gray-500">Disponible: {maxQuantity}</p>
+            <p className="text-xs text-muted-foreground">
+              <FormattedMessage id="buyDialog.available" defaultMessage="Disponible: {quantity}" values={{ quantity: maxQuantity }} />
+            </p>
           </div>
 
           <div className="border-t pt-4">
             <div className="flex justify-between text-sm mb-1">
-              <span>Prix unitaire:</span>
-              <span className="font-medium">${stock.unitPrice?.toFixed(2)}</span>
+              <span>
+                <FormattedMessage id="buyDialog.unitPrice" defaultMessage="Prix unitaire:" />
+              </span>
+              <span className="font-medium">
+                <FormattedNumber value={stock.unitPrice ?? 0} style="currency" currency="USD" />
+              </span>
             </div>
             <div className="flex justify-between text-lg font-bold">
-              <span>Total:</span>
-              <span className="text-green-600">${totalPrice.toFixed(2)}</span>
+              <span>
+                <FormattedMessage id="buyDialog.total" defaultMessage="Total:" />
+              </span>
+              <span className="text-primary">
+                <FormattedNumber value={totalPrice} style="currency" currency="USD" />
+              </span>
             </div>
           </div>
 
-          {error && <p className="text-sm text-red-600">{error}</p>}
+          {error && <p className="text-sm text-destructive">{error}</p>}
         </div>
 
         <DialogFooter>
           <Button variant="outline" onClick={() => onOpenChange(false)} disabled={loading}>
-            Annuler
+            <FormattedMessage id="buyDialog.cancel" defaultMessage="Annuler" />
           </Button>
           <Button onClick={handleBuy} disabled={loading || quantity < 1 || quantity > maxQuantity}>
             {loading ? (
               <>
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Achat en cours...
+                <FormattedMessage id="buyDialog.buying" defaultMessage="Achat en cours..." />
               </>
             ) : (
-              "Confirmer l'achat"
+              <FormattedMessage id="buyDialog.confirm" defaultMessage="Confirmer l'achat" />
             )}
           </Button>
         </DialogFooter>

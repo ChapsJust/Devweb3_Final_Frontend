@@ -1,10 +1,13 @@
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { TrendingUp, User, LogOut } from "lucide-react";
+import { TrendingUp, User, LogOut, Globe } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
+import { FormattedMessage } from "react-intl";
+import { useLocale } from "@/context/LocaleContextType";
 
 export default function Header() {
   const { isLoggedIn, user, logout } = useAuth();
+  const { locale, changeLocale } = useLocale();
 
   return (
     <header className="sticky top-0 z-50 border-b bg-background shadow-sm">
@@ -19,39 +22,48 @@ export default function Header() {
           {/* Navigation */}
           <nav className="hidden md:flex items-center gap-6">
             <Link to="/" className="text-muted-foreground hover:text-foreground">
-              Accueil
+              <FormattedMessage id="header.home" defaultMessage="Accueil" />
             </Link>
             {isLoggedIn && (
               <Link to="/portfolio" className="text-muted-foreground hover:text-foreground">
-                Mon Portfolio
+                <FormattedMessage id="header.portfolio" defaultMessage="Mon Portfolio" />
               </Link>
             )}
           </nav>
 
           {/* Auth Buttons */}
           <div className="flex items-center gap-3">
+            <Button variant="ghost" size="sm" className="w-16" onClick={() => changeLocale(locale === "fr" ? "en" : "fr")}>
+              <Globe className="h-4 w-4 mr-1" />
+              {locale === "fr" ? "EN" : "FR"}
+            </Button>
+
             {isLoggedIn ? (
               <>
-                <span className="text-sm text-muted-foreground hidden md:block">Bonjour, {user?.name}</span>
+                <span className="text-sm text-muted-foreground hidden md:block min-w-[120px]">
+                  <FormattedMessage id="header.hello" defaultMessage="Bonjour, {name}" values={{ name: user?.name }} />
+                </span>
                 <Link to="/portfolio">
                   <Button variant="ghost" size="icon">
                     <User className="h-5 w-5" />
                   </Button>
                 </Link>
-                <Button variant="outline" size="sm" onClick={logout}>
+                <Button variant="outline" size="sm" className="min-w-[120px]" onClick={logout}>
                   <LogOut className="h-4 w-4 mr-2" />
-                  Déconnexion
+                  <FormattedMessage id="header.logout" defaultMessage="Déconnexion" />
                 </Button>
               </>
             ) : (
               <>
                 <Link to="/login">
-                  <Button variant="ghost" size="sm">
-                    Connexion
+                  <Button variant="ghost" size="sm" className="min-w-[90px]">
+                    <FormattedMessage id="header.login" defaultMessage="Connexion" />
                   </Button>
                 </Link>
                 <Link to="/register">
-                  <Button size="sm">Inscription</Button>
+                  <Button size="sm" className="min-w-[90px]">
+                    <FormattedMessage id="header.register" defaultMessage="Inscription" />
+                  </Button>
                 </Link>
               </>
             )}

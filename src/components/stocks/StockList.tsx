@@ -2,6 +2,7 @@ import { useStocks } from "@/context/StockContext";
 import { type Stock } from "@/services/api";
 import StockCard from "./StockCard";
 import { Loader2 } from "lucide-react";
+import { FormattedMessage } from "react-intl";
 
 interface StockListProps {
   isLoggedIn?: boolean;
@@ -14,8 +15,10 @@ export default function StockList({ isLoggedIn = false, onBuy }: StockListProps)
   if (loading) {
     return (
       <div className="flex justify-center items-center py-12">
-        <Loader2 className="h-8 w-8 animate-spin text-green-600" />
-        <span className="ml-2 text-gray-600">Chargement des stocks...</span>
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+        <span className="ml-2 text-muted-foreground">
+          <FormattedMessage id="stockList.loading" defaultMessage="Chargement des stocks..." />
+        </span>
       </div>
     );
   }
@@ -23,7 +26,7 @@ export default function StockList({ isLoggedIn = false, onBuy }: StockListProps)
   if (error) {
     return (
       <div className="text-center py-12">
-        <p className="text-red-600">{error}</p>
+        <p className="text-destructive">{error}</p>
       </div>
     );
   }
@@ -31,7 +34,9 @@ export default function StockList({ isLoggedIn = false, onBuy }: StockListProps)
   if (!stocks || stocks.length === 0) {
     return (
       <div className="text-center py-12">
-        <p className="text-gray-500">Aucun stock disponible</p>
+        <p className="text-muted-foreground">
+          <FormattedMessage id="stockList.empty" defaultMessage="Aucun stock disponible" />
+        </p>
       </div>
     );
   }

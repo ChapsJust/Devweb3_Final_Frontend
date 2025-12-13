@@ -2,6 +2,7 @@ import { useAuth } from "@/context/AuthContext";
 import Portfolio from "@/components/portfolio/Portfolio";
 import EnvUtils from "@/utils/envUtils";
 import { useEffect } from "react";
+import { FormattedMessage } from "react-intl";
 
 const API_URL = EnvUtils.getApiUrl();
 
@@ -34,7 +35,9 @@ export default function PortfolioPage() {
 
   return (
     <div>
-      <h1 className="text-3xl font-bold mb-8">Mon Portfolio</h1>
+      <h1 className="text-3xl font-bold mb-8">
+        <FormattedMessage id="portfolio.title" defaultMessage="Mon Portfolio" />
+      </h1>
       <Portfolio />
     </div>
   );

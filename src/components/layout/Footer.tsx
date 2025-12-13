@@ -1,4 +1,5 @@
 import { TrendingUp } from "lucide-react";
+import { FormattedMessage } from "react-intl";
 
 export default function Footer() {
   return (
@@ -12,15 +13,17 @@ export default function Footer() {
           </div>
 
           {/* Copyright */}
-          <p className="text-sm text-muted-foreground">© {new Date().getFullYear()} StockManager. Tous droits réservés.</p>
+          <p className="text-sm text-muted-foreground">
+            <FormattedMessage id="footer.copyright" defaultMessage="© {year} StockManager. Tous droits réservés." values={{ year: new Date().getFullYear() }} />
+          </p>
 
           {/* Links */}
           <div className="flex gap-4 text-sm text-muted-foreground">
-            <a href="#" className="hover:text-foreground transition-colors">
-              Confidentialité
+            <a href="#" className="hover:text-foreground">
+              <FormattedMessage id="footer.privacy" defaultMessage="Confidentialité" />
             </a>
-            <a href="#" className="hover:text-foreground transition-colors">
-              Conditions
+            <a href="#" className="hover:text-foreground">
+              <FormattedMessage id="footer.terms" defaultMessage="Conditions" />
             </a>
           </div>
         </div>

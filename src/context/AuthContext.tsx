@@ -1,5 +1,5 @@
-import EnvUtils from "@/utils/envUtils";
 import { createContext, useContext, useState, useEffect, type ReactNode } from "react";
+import EnvUtils from "../utils/envUtils";
 
 interface Stock {
   _id: string;
@@ -22,6 +22,7 @@ interface RegisterData {
   email: string;
   password: string;
   dateOfBirth: Date;
+  address: string;
 }
 
 interface AuthContextType {

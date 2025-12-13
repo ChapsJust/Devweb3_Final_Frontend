@@ -1,232 +1,170 @@
 import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
+import { useForm, Controller } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import * as z from "zod";
 import { useAuth } from "@/context/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
+import { Input } from "@/components/ui/input";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Field, FieldLabel, FieldError, FieldContent } from "@/components/ui/field";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
-import { Loader2, Mail, Lock, User, AlertCircle, CalendarIcon } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { Loader2, Mail, Lock, User, AlertCircle, CalendarIcon, MapPin } from "lucide-react";
+
+const formSchema = z
+  .object({
+    name: z.string().min(2, "Le nom doit contenir au moins 2 caractères"),
+    email: z.string().email("L'email n'est pas valide"),
+    address: z.string().min(5, "L'adresse doit contenir au moins 5 caractères"),
+    password: z.string().min(6, "Le mot de passe doit contenir au moins 6 caractères"),
+    confirmPassword: z.string(),
+    dateOfBirth: z.date({ error: "La date de naissance est requise" }).refine(
+      (date) => {
+        const today = new Date();
+        const age = today.getFullYear() - date.getFullYear();
+        const monthDiff = today.getMonth() - date.getMonth();
+        return age > 18 || (age === 18 && monthDiff >= 0);
+      },
+      { message: "Vous devez avoir au moins 18 ans" }
+    ),
+  })
+  .refine((data) => data.password === data.confirmPassword, {
+    message: "Les mots de passe ne correspondent pas",
+    path: ["confirmPassword"],
+  });
+
+type FormValues = z.infer<typeof formSchema>;
 
 export default function RegisterForm() {
   const navigate = useNavigate();
-  const { register } = useAuth();
-
-  const [formData, setFormData] = useState({
-    name: "",
-    email: "",
-    password: "",
-    confirmPassword: "",
-  });
-  const [dateOfBirth, setDateOfBirth] = useState<Date | undefined>(undefined);
-  const [errors, setErrors] = useState<Record<string, string>>({});
-  const [loading, setLoading] = useState(false);
+  const { register: registerUser } = useAuth();
   const [serverError, setServerError] = useState("");
 
-  const validate = () => {
-    const newErrors: Record<string, string> = {};
+  const {
+    register,
+    handleSubmit,
+    control,
+    formState: { errors, isSubmitting },
+  } = useForm<FormValues>({
+    resolver: zodResolver(formSchema),
+    defaultValues: {
+      name: "",
+      email: "",
+      address: "",
+      password: "",
+      confirmPassword: "",
+    },
+  });
 
-    if (!formData.name) {
-      newErrors.name = "Le nom est requis";
-    } else if (formData.name.length < 2) {
-      newErrors.name = "Le nom doit contenir au moins 2 caractères";
-    }
-
-    if (!formData.email) {
-      newErrors.email = "L'email est requis";
-    } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
-      newErrors.email = "L'email n'est pas valide";
-    }
-
-    if (!formData.password) {
-      newErrors.password = "Le mot de passe est requis";
-    } else if (formData.password.length < 6) {
-      newErrors.password = "Le mot de passe doit contenir au moins 6 caractères";
-    }
-
-    if (!formData.confirmPassword) {
-      newErrors.confirmPassword = "Veuillez confirmer le mot de passe";
-    } else if (formData.password !== formData.confirmPassword) {
-      newErrors.confirmPassword = "Les mots de passe ne correspondent pas";
-    }
-
-    if (!dateOfBirth) {
-      newErrors.dateOfBirth = "La date de naissance est requise";
-    } else {
-      // Vérifier que l'utilisateur a au moins 18 ans
-      const today = new Date();
-      const age = today.getFullYear() - dateOfBirth.getFullYear();
-      const monthDiff = today.getMonth() - dateOfBirth.getMonth();
-      const isAdult = age > 18 || (age === 18 && monthDiff >= 0);
-
-      if (!isAdult) {
-        newErrors.dateOfBirth = "Vous devez avoir au moins 18 ans";
-      }
-    }
-
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
-  };
-
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
-    if (errors[name]) {
-      setErrors((prev) => ({ ...prev, [name]: "" }));
-    }
+  const onSubmit = async (values: FormValues) => {
     setServerError("");
-  };
-
-  const handleDateChange = (date: Date | undefined) => {
-    setDateOfBirth(date);
-    if (errors.dateOfBirth) {
-      setErrors((prev) => ({ ...prev, dateOfBirth: "" }));
-    }
-    setServerError("");
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setServerError("");
-
-    if (!validate()) return;
-
-    setLoading(true);
     try {
-      await register({
-        name: formData.name,
-        email: formData.email,
-        password: formData.password,
-        dateOfBirth: dateOfBirth!,
+      await registerUser({
+        name: values.name,
+        email: values.email,
+        password: values.password,
+        dateOfBirth: values.dateOfBirth,
+        address: values.address,
       });
       navigate("/");
     } catch (error) {
       setServerError((error as Error).message);
-    } finally {
-      setLoading(false);
     }
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-6">
-      {/* Server Error */}
+    <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
       {serverError && (
-        <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg flex items-center gap-2">
-          <AlertCircle className="h-5 w-5" />
-          <span>{serverError}</span>
-        </div>
+        <Alert variant="destructive">
+          <AlertCircle className="h-4 w-4" />
+          <AlertDescription>{serverError}</AlertDescription>
+        </Alert>
       )}
 
-      {/* Name */}
-      <div>
-        <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-1">
-          Nom complet
-        </label>
-        <div className="relative">
-          <User className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
-          <input
-            type="text"
-            id="name"
-            name="name"
-            value={formData.name}
-            onChange={handleChange}
-            className={cn("w-full pl-10 pr-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500", errors.name ? "border-red-500" : "border-gray-300")}
-            placeholder="John Doe"
+      <Field data-invalid={!!errors.name}>
+        <FieldLabel>Nom complet</FieldLabel>
+        <FieldContent>
+          <div className="relative">
+            <User className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Input placeholder="John Doe" className="pl-10" {...register("name")} />
+          </div>
+          {errors.name && <FieldError>{errors.name.message}</FieldError>}
+        </FieldContent>
+      </Field>
+
+      <Field data-invalid={!!errors.email}>
+        <FieldLabel>Email</FieldLabel>
+        <FieldContent>
+          <div className="relative">
+            <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Input type="email" placeholder="votre@email.com" className="pl-10" {...register("email")} />
+          </div>
+          {errors.email && <FieldError>{errors.email.message}</FieldError>}
+        </FieldContent>
+      </Field>
+
+      <Field data-invalid={!!errors.dateOfBirth}>
+        <FieldLabel>Date de naissance</FieldLabel>
+        <FieldContent>
+          <Controller
+            control={control}
+            name="dateOfBirth"
+            render={({ field }) => (
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button type="button" variant="outline" className={"w-full justify-start text-left font-normal cursor-pointer"}>
+                    <CalendarIcon className="mr-2 h-4 w-4" />
+                    {field.value ? format(field.value, "dd MMMM yyyy", { locale: fr }) : "Sélectionnez une date"}
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0" align="start">
+                  <Calendar mode="single" selected={field.value} onSelect={field.onChange} disabled={(date) => date > new Date() || date < new Date("1900-01-01")} captionLayout="dropdown" />
+                </PopoverContent>
+              </Popover>
+            )}
           />
-        </div>
-        {errors.name && <p className="mt-1 text-sm text-red-600">{errors.name}</p>}
-      </div>
+          {errors.dateOfBirth && <FieldError>{errors.dateOfBirth.message}</FieldError>}
+        </FieldContent>
+      </Field>
 
-      {/* Email */}
-      <div>
-        <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
-          Email
-        </label>
-        <div className="relative">
-          <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
-          <input
-            type="email"
-            id="email"
-            name="email"
-            value={formData.email}
-            onChange={handleChange}
-            className={cn("w-full pl-10 pr-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500", errors.email ? "border-red-500" : "border-gray-300")}
-            placeholder="votre@email.com"
-          />
-        </div>
-        {errors.email && <p className="mt-1 text-sm text-red-600">{errors.email}</p>}
-      </div>
+      <Field data-invalid={!!errors.address}>
+        <FieldLabel>Adresse</FieldLabel>
+        <FieldContent>
+          <div className="relative">
+            <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Input placeholder="123 Rue Example, Ville" className="pl-10" {...register("address")} />
+          </div>
+          {errors.address && <FieldError>{errors.address.message}</FieldError>}
+        </FieldContent>
+      </Field>
 
-      {/* Date of Birth */}
-      <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">Date de naissance</label>
-        <Popover>
-          <PopoverTrigger asChild>
-            <Button type="button" variant="outline" className={cn("w-full justify-start text-left font-normal", !dateOfBirth && "text-muted-foreground", errors.dateOfBirth && "border-red-500")}>
-              <CalendarIcon className="mr-2 h-4 w-4" />
-              {dateOfBirth ? format(dateOfBirth, "dd MMMM yyyy", { locale: fr }) : <span>Sélectionnez une date</span>}
-            </Button>
-          </PopoverTrigger>
-          <PopoverContent className="w-auto p-0" align="start">
-            <Calendar
-              mode="single"
-              selected={dateOfBirth}
-              onSelect={handleDateChange}
-              disabled={(date) => date > new Date() || date < new Date("1900-01-01")}
-              initialFocus
-              captionLayout="dropdown"
-              fromYear={1900}
-              toYear={new Date().getFullYear()}
-            />
-          </PopoverContent>
-        </Popover>
-        {errors.dateOfBirth && <p className="mt-1 text-sm text-red-600">{errors.dateOfBirth}</p>}
-      </div>
+      <Field data-invalid={!!errors.password}>
+        <FieldLabel>Mot de passe</FieldLabel>
+        <FieldContent>
+          <div className="relative">
+            <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Input type="password" placeholder="••••••••" className="pl-10" {...register("password")} />
+          </div>
+          {errors.password && <FieldError>{errors.password.message}</FieldError>}
+        </FieldContent>
+      </Field>
 
-      {/* Password */}
-      <div>
-        <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1">
-          Mot de passe
-        </label>
-        <div className="relative">
-          <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
-          <input
-            type="password"
-            id="password"
-            name="password"
-            value={formData.password}
-            onChange={handleChange}
-            className={cn("w-full pl-10 pr-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500", errors.password ? "border-red-500" : "border-gray-300")}
-            placeholder="••••••••"
-          />
-        </div>
-        {errors.password && <p className="mt-1 text-sm text-red-600">{errors.password}</p>}
-      </div>
+      <Field data-invalid={!!errors.confirmPassword}>
+        <FieldLabel>Confirmer le mot de passe</FieldLabel>
+        <FieldContent>
+          <div className="relative">
+            <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Input type="password" placeholder="••••••••" className="pl-10" {...register("confirmPassword")} />
+          </div>
+          {errors.confirmPassword && <FieldError>{errors.confirmPassword.message}</FieldError>}
+        </FieldContent>
+      </Field>
 
-      {/* Confirm Password */}
-      <div>
-        <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700 mb-1">
-          Confirmer le mot de passe
-        </label>
-        <div className="relative">
-          <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
-          <input
-            type="password"
-            id="confirmPassword"
-            name="confirmPassword"
-            value={formData.confirmPassword}
-            onChange={handleChange}
-            className={cn("w-full pl-10 pr-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500", errors.confirmPassword ? "border-red-500" : "border-gray-300")}
-            placeholder="••••••••"
-          />
-        </div>
-        {errors.confirmPassword && <p className="mt-1 text-sm text-red-600">{errors.confirmPassword}</p>}
-      </div>
-
-      {/* Submit Button */}
-      <Button type="submit" className="w-full" disabled={loading}>
-        {loading ? (
+      <Button type="submit" className="w-full" disabled={isSubmitting}>
+        {isSubmitting ? (
           <>
             <Loader2 className="mr-2 h-4 w-4 animate-spin" />
             Inscription en cours...
@@ -236,10 +174,9 @@ export default function RegisterForm() {
         )}
       </Button>
 
-      {/* Link to Login */}
-      <p className="text-center text-sm text-gray-600">
+      <p className="text-center text-sm text-muted-foreground">
         Déjà un compte ?{" "}
-        <Link to="/login" className="text-green-600 hover:underline font-medium">
+        <Link to="/login" className="text-primary hover:underline font-medium">
           Se connecter
         </Link>
       </p>

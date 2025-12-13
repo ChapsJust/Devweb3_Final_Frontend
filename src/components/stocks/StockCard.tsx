@@ -1,5 +1,7 @@
 import type { Stock } from "@/services/api";
 import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 import { TrendingUp, TrendingDown } from "lucide-react";
 
 interface StockCardProps {
@@ -16,40 +18,46 @@ export default function StockCard({ stock, onBuy, isLoggedIn = false }: StockCar
   const unitPrice = stock.unitPrice ?? 0;
 
   return (
-    <div className="border rounded-lg p-4 bg-white shadow-sm hover:shadow-md transition-shadow">
-      <div className="flex justify-between items-start mb-3">
-        <div>
-          <h3 className="font-bold text-lg">{stock.stockShortName}</h3>
-          <p className="text-sm text-gray-500">{stock.stockName}</p>
+    <Card className="hover:shadow-md">
+      <CardHeader className="pb-2">
+        <div className="flex justify-between items-start">
+          <div>
+            <h3 className="font-bold text-lg">{stock.stockShortName}</h3>
+            <p className="text-sm text-muted-foreground">{stock.stockName}</p>
+          </div>
+          <Badge variant={stock.isAvailable ? "default" : "destructive"} className="gap-1">
+            {stock.isAvailable ? <TrendingUp className="h-3 w-3" /> : <TrendingDown className="h-3 w-3" />}
+            {stock.isAvailable ? "Disponible" : "Indisponible"}
+          </Badge>
         </div>
-        <span className={`flex items-center gap-1 text-sm font-medium ${stock.isAvailable ? "text-green-600" : "text-red-600"}`}>
-          {stock.isAvailable ? <TrendingUp className="h-4 w-4" /> : <TrendingDown className="h-4 w-4" />}
-          {stock.isAvailable ? "Disponible" : "Indisponible"}
-        </span>
-      </div>
+      </CardHeader>
 
-      <div className="flex justify-between items-center mb-3">
-        <span className="text-2xl font-bold">${unitPrice.toFixed(2)}</span>
-        <span className="text-sm text-gray-500">Quantité: {stock.quantity ?? 0}</span>
-      </div>
-
-      {stock.tags && stock.tags.length > 0 && (
-        <div className="flex flex-wrap gap-1 mb-3">
-          {stock.tags.map((tag) => (
-            <span key={tag} className="text-xs bg-gray-100 text-gray-600 px-2 py-1 rounded">
-              {tag}
-            </span>
-          ))}
+      <CardContent className="space-y-3">
+        <div className="flex justify-between items-center">
+          <span className="text-2xl font-bold">${unitPrice.toFixed(2)}</span>
+          <span className="text-sm text-muted-foreground">Quantité: {stock.quantity ?? 0}</span>
         </div>
-      )}
 
-      {isLoggedIn ? (
-        <Button className="w-full" onClick={() => onBuy?.(stock)} disabled={!stock.isAvailable || stock.quantity === 0}>
-          {stock.isAvailable && stock.quantity > 0 ? "Acheter" : "Indisponible"}
-        </Button>
-      ) : (
-        <p className="text-center text-sm text-gray-500">Connectez-vous pour acheter</p>
-      )}
-    </div>
+        {stock.tags && stock.tags.length > 0 && (
+          <div className="flex flex-wrap gap-1">
+            {stock.tags.map((tag) => (
+              <Badge key={tag} variant="secondary" className="text-xs">
+                {tag}
+              </Badge>
+            ))}
+          </div>
+        )}
+      </CardContent>
+
+      <CardFooter>
+        {isLoggedIn ? (
+          <Button className="w-full" onClick={() => onBuy?.(stock)} disabled={!stock.isAvailable || stock.quantity === 0}>
+            {stock.isAvailable && stock.quantity > 0 ? "Acheter" : "Indisponible"}
+          </Button>
+        ) : (
+          <p className="w-full text-center text-sm text-muted-foreground">Connectez-vous pour acheter</p>
+        )}
+      </CardFooter>
+    </Card>
   );
 }

@@ -7,22 +7,22 @@ export default function Header() {
   const { isLoggedIn, user, logout } = useAuth();
 
   return (
-    <header className="border-b bg-white shadow-sm">
+    <header className="border-b bg-background shadow-sm">
       <div className="container mx-auto px-4">
         <div className="flex h-16 items-center justify-between">
           {/* Logo */}
           <Link to="/" className="flex items-center gap-2">
-            <TrendingUp className="h-8 w-8 text-green-600" />
-            <span className="text-xl font-bold text-gray-900">StockManager</span>
+            <TrendingUp className="h-8 w-8 text-primary" />
+            <span className="text-xl font-bold">StockManager</span>
           </Link>
 
           {/* Navigation */}
           <nav className="hidden md:flex items-center gap-6">
-            <Link to="/" className="text-gray-600 hover:text-gray-900 transition-colors">
+            <Link to="/" className="text-muted-foreground hover:text-foreground">
               Accueil
             </Link>
             {isLoggedIn && (
-              <Link to="/portfolio" className="text-gray-600 hover:text-gray-900 transition-colors">
+              <Link to="/portfolio" className="text-muted-foreground hover:text-foreground">
                 Mon Portfolio
               </Link>
             )}
@@ -32,7 +32,7 @@ export default function Header() {
           <div className="flex items-center gap-3">
             {isLoggedIn ? (
               <>
-                <span className="text-sm text-gray-600 hidden md:block">Bonjour, {user?.name}</span>
+                <span className="text-sm text-muted-foreground hidden md:block">Bonjour, {user?.name}</span>
                 <Link to="/portfolio">
                   <Button variant="ghost" size="icon">
                     <User className="h-5 w-5" />

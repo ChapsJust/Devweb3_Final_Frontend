@@ -7,7 +7,7 @@ export default function Header() {
   const { isLoggedIn, user, logout } = useAuth();
 
   return (
-    <header className="border-b bg-background shadow-sm">
+    <header className="sticky top-0 z-50 border-b bg-background shadow-sm">
       <div className="container mx-auto px-4">
         <div className="flex h-16 items-center justify-between">
           {/* Logo */}

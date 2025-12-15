@@ -1,73 +1,160 @@
-# React + TypeScript + Vite
+# 📈 StockTrader - Application de Trading
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Une application web de simulation de trading d'actions permettant aux utilisateurs de gérer un portefeuille virtuel, acheter et vendre des actions en temps réel.
 
-Currently, two official plugins are available:
+## 🚀 Fonctionnalités
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+- **Authentification** : Inscription et connexion sécurisées avec JWT
+- **Portefeuille** : Visualisation et gestion de votre portefeuille d'actions
+- **Trading** : Achat et vente d'actions en temps réel
+- **Multilingue** : Support français et anglais
+- **Documentation API** : Interface Swagger interactive
 
-## React Compiler
+## 🛠️ Technologies
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+### Backend
 
-## Expanding the ESLint configuration
+- **Node.js** avec **Express**
+- **TypeScript**
+- **MongoDB** (base de données)
+- **JWT** (authentification)
+- **Swagger** (documentation API)
+- **Vitest** (tests unitaires)
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+### Frontend
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+- **React 18** avec **TypeScript**
+- **Vite** (build tool)
+- **Tailwind CSS** (styling)
+- **Shadcn/UI** (composants UI)
+- **Context API** (gestion d'état)
 
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
+## 📋 Prérequis
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+- Node.js v18+
+- npm ou yarn
+- MongoDB (local ou Atlas)
+
+## ⚙️ Installation
+
+### 1. Cloner le projet
+
+```bash
+git clone <url-du-repo>
+cd ProjetFinal
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+### 2. Configuration du Backend
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
-
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+```bash
+cd backend
+npm install
 ```
+
+Créer le fichier `.env` à partir de l'exemple :
+
+```bash
+cp .env.example .env
+```
+
+Configurer les variables d'environnement dans `.env` :
+
+```env
+PORT=3000
+MONGODB_URI=mongodb://localhost:27017/stocktrader
+JWT_SECRET=votre_secret_jwt
+NODE_ENV=development
+```
+
+### 3. Configuration du Frontend
+
+```bash
+cd frontend
+npm install
+```
+
+Créer le fichier `.env` :
+
+```env
+VITE_API_URL=http://localhost:3000/api
+```
+
+## 🚀 Lancement
+
+### Démarrer le Backend
+
+```bash
+cd backend
+npm run dev
+```
+
+Le serveur démarre sur `http://localhost:3000`
+
+### Démarrer le Frontend
+
+```bash
+cd frontend
+npm run dev
+```
+
+L'application démarre sur `http://localhost:5173`
+
+## 📚 Documentation API
+
+Une fois le backend lancé, accédez à la documentation Swagger :
+
+- **Interface Swagger UI** : `http://localhost:3000/api/docs`
+- **Spécification JSON** : `http://localhost:3000/api/docs.json`
+
+## 🧪 Tests
+
+### Backend
+
+```bash
+cd backend
+npm run test
+```
+
+## 📁 Structure du Projet
+
+```
+ProjetFinal/
+├── backend/
+│   ├── src/
+│   │   ├── common/          # Constantes et utilitaires
+│   │   ├── models/          # Modèles de données
+│   │   ├── repos/           # Couche d'accès aux données
+│   │   ├── routes/          # Routes API
+│   │   ├── services/        # Logique métier
+│   │   └── server.ts        # Configuration Express
+│   └── tests/               # Tests unitaires
+│
+└── frontend/
+    ├── src/
+    │   ├── components/      # Composants React
+    │   ├── context/         # Contextes React
+    │   ├── pages/           # Pages de l'application
+    │   ├── services/        # Services API
+    │   ├── lang/            # Fichiers de traduction
+    │   └── lib/             # Utilitaires
+    └── public/              # Fichiers statiques
+```
+
+## 🔗 Endpoints API Principaux
+
+| Méthode | Endpoint              | Description          |
+| ------- | --------------------- | -------------------- |
+| POST    | `/api/users/register` | Inscription          |
+| POST    | `/api/users/login`    | Connexion            |
+| GET     | `/api/stocks`         | Liste des actions    |
+| GET     | `/api/stocks/:id`     | Détails d'une action |
+| POST    | `/api/stocks/buy`     | Acheter une action   |
+| POST    | `/api/stocks/sell`    | Vendre une action    |
+
+## 👤 Auteur
+
+Justin
+
+## 📄 Licence
+
+Ce projet est réalisé dans le cadre du cours de Développement Web 3.

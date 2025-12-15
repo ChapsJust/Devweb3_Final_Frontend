@@ -2,6 +2,8 @@
 
 Une application web de simulation de trading d'actions permettant aux utilisateurs de gérer un portefeuille virtuel, acheter et vendre des actions en temps réel.
 
+[justin.intebec.ca](https://justin.intebec.ca/)
+
 ## Fonctionnalités
 
 - **Authentification** : Inscription et connexion sécurisées avec JWT

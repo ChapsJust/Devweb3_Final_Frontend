@@ -14,7 +14,7 @@ const LocaleContext = createContext<LocaleContextType | null>(null);
 export const useLocale = () => {
   const context = useContext(LocaleContext);
   if (!context) {
-    throw new Error("useLocale must be used within LocaleProvider");
+    throw new Error("useLocale doit être utilisé dans un LocaleProvider");
   }
   return context;
 };
